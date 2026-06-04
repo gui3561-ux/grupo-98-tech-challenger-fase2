@@ -1,0 +1,36 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+
+# Ambiente virtual (gerenciado pelo uv)
+.venv/
+
+# Variáveis de ambiente
+.env
+
+# Dados e modelos (versionados pelo DVC, não pelo Git)
+data/raw/*
+data/processed/*
+data/features/*
+models/*
+!data/**/.gitkeep
+!models/.gitkeep
+
+# MLflow
+mlruns/
+mlartifacts/
+
+# IDEs
+.vscode/
+.idea/
+
+# macOS
+.DS_Store
+
+# Testes e cobertura
+.coverage
+.pytest_cache/
+htmlcov/
