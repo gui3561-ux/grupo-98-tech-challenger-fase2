@@ -1,0 +1,8 @@
+{
+  "dataset": "retailrocket",
+  "min_interactions": 10,
+  "num_users": 1502,
+  "num_items": 2598,
+  "num_interactions": 40574,
+  "sparsity": 98.960226
+}
