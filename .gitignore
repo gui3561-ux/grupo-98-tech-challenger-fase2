@@ -13,7 +13,7 @@ build/
 
 # Dados e modelos (versionados pelo DVC, não pelo Git)
 data/raw/*
-data/processed/*
+
 data/features/*
 models/*
 !data/**/.gitkeep
@@ -34,3 +34,7 @@ mlartifacts/
 .coverage
 .pytest_cache/
 htmlcov/
+
+# Imgs
+
+*.png
