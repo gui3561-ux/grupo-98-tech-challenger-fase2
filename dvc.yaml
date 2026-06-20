@@ -1,0 +1,62 @@
+stages:
+  preprocess:
+    cmd: uv run python -m preprocessing.cli
+    deps:
+      - data/raw/events.csv
+      - src/preprocessing/strategies.py
+      - src/preprocessing/pipeline.py
+      - src/preprocessing/cli.py
+    params:
+      - params.yaml:
+          - preprocessing.min_interactions
+          - seed
+    outs:
+      - data/processed/interactions.parquet
+
+  feature_engineering:
+    cmd: uv run python -m preprocessing.feature_cli
+    deps:
+      - data/processed/interactions.parquet
+      - src/preprocessing/feature_engineering.py
+      - src/preprocessing/feature_cli.py
+    params:
+      - params.yaml:
+          - seed
+    outs:
+      - data/features/train.parquet
+      - data/features/val.parquet
+      - data/features/test.parquet
+      - data/features/encoders.json
+
+  train:
+    cmd: uv run python -m training.cli
+    deps:
+      - data/features/train.parquet
+      - data/features/val.parquet
+      - data/features/encoders.json
+      - src/models/
+      - src/training/
+    params:
+      - params.yaml:
+          - training
+          - seed
+    outs:
+      - models/model.pt
+    metrics:
+      - models/train_metrics.json:
+          cache: false
+
+  evaluate:
+    cmd: uv run python -m evaluation.cli
+    deps:
+      - data/features/test.parquet
+      - data/features/encoders.json
+      - models/model.pt
+      - src/evaluation/
+    params:
+      - params.yaml:
+          - evaluation
+          - seed
+    metrics:
+      - models/eval_metrics.json:
+          cache: false
