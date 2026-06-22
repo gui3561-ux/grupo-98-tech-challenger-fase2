@@ -15,4 +15,4 @@ repos:
       - id: check-toml
       - id: check-added-large-files
         args: [--maxkb=2000]
-        exclude: poetry.lock
+        exclude: uv.lock

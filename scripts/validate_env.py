@@ -2,9 +2,9 @@
 
 Deve ser o primeiro script executado após:
     git clone <repo>
-    poetry install
+    uv sync --dev
     cp .env.example .env
-    poetry run python scripts/validate_env.py
+    uv run python scripts/validate_env.py
 """
 
 import importlib
@@ -59,7 +59,7 @@ def check_packages() -> bool:
             importlib.import_module(pkg)
             print(f"  ✓ {pkg}")
         except ImportError:
-            print(f"  ✗ {pkg} — NÃO ENCONTRADO (rode: poetry install)")
+            print(f"  ✗ {pkg} — NÃO ENCONTRADO (rode: uv sync --dev)")
             all_ok = False
     return all_ok
 
@@ -98,7 +98,7 @@ def check_env_file() -> bool:
 def main() -> None:
     """Executa todas as verificações e encerra com código apropriado."""
     print("=== Validação de Ambiente ===")
-    print("Execute após: git clone → poetry install → cp .env.example .env\n")
+    print("Execute após: git clone → uv sync --dev → cp .env.example .env\n")
 
     print("Python:")
     python_ok = check_python_version()
