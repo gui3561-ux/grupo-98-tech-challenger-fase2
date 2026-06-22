@@ -1357,7 +1357,7 @@ dev = [
     { name = "pre-commit", specifier = ">=3.7.0" },
     { name = "pytest", specifier = ">=8.1.0" },
     { name = "pytest-cov", specifier = ">=5.0.0" },
-    { name = "ruff", specifier = ">=0.4.0" },
+    { name = "ruff", specifier = ">=0.15.0" },
     { name = "seaborn", specifier = ">=0.13.2" },
 ]
 

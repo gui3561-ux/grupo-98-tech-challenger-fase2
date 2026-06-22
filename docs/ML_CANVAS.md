@@ -3,7 +3,7 @@
 > **Projeto:** Tech Challenge Fase 02 — FIAP Pós-Graduação em Machine Learning Engineering
 > **Grupo:** 98
 > **Produto:** `ecommerce-recommender`
-> **Versão:** 1.0 — Jun/2026
+> **Versão:** 1.1 — Jun/2026
 
 ---
 
@@ -296,10 +296,10 @@ Item ID ──► Item Embedding ──┘
 ### 9.3 Design Patterns aplicados
 
 
-| Pattern      | Uso                                               |
-| ------------ | ------------------------------------------------- |
-| **Factory**  | Instanciação de modelos (MLP, SVD, Popularity)    |
-| **Strategy** | Troca de preprocessors / estratégias de avaliação |
+| Pattern      | Uso                                                                                          |
+| ------------ | -------------------------------------------------------------------------------------------- |
+| **Factory**  | `RecommenderFactory.create()` instancia os modelos (MLP, SVD, Popularity)                    |
+| **Strategy** | `Recommender` (ABC) com estratégias intercambiáveis (`MLPRecommender`, `PopularityRecommender`, `SVDRecommender`); preprocessors planejados como evolução |
 
 
 ### 9.4 Stack MLOps
@@ -411,7 +411,7 @@ Item ID ──► Item Embedding ──┘
 
 | Critério                | Peso | Status esperado                              |
 | ----------------------- | ---- | -------------------------------------------- |
-| Clean code e estrutura  | 15%  | SOLID, type hints, Factory/Strategy, ruff OK |
+| Clean code e estrutura  | 15%  | SOLID, type hints, Factory/Strategy, ruff OK, testes unitários |
 | Reprodutibilidade       | 15%  | uv.lock, .env, instalação limpa              |
 | Docker                  | 15%  | Multi-stage, compose funcional               |
 | DVC + Pipeline          | 15%  | ≥ 3 stages, `dvc repro` OK                   |
