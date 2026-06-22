@@ -82,8 +82,13 @@ def train_epoch(
     for batch in range(n_batches):
         start, end = batch * config.batch_size, (batch + 1) * config.batch_size
         loss = _train_step(
-            model, users[start:end], items[start:end], ratings[start:end],
-            optimizer, criterion, config,
+            model,
+            users[start:end],
+            items[start:end],
+            ratings[start:end],
+            optimizer,
+            criterion,
+            config,
         )
         total_loss += loss
     return total_loss / n_batches

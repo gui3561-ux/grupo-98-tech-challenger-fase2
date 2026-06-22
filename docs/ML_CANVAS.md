@@ -1,8 +1,8 @@
 # ML Canvas — Sistema de Recomendação de Produtos (E-commerce)
 
-> **Projeto:** Tech Challenge Fase 02 — FIAP Pós-Graduação em Machine Learning Engineering  
-> **Grupo:** 98  
-> **Produto:** `ecommerce-recommender`  
+> **Projeto:** Tech Challenge Fase 02 — FIAP Pós-Graduação em Machine Learning Engineering
+> **Grupo:** 98
+> **Produto:** `ecommerce-recommender`
 > **Versão:** 1.0 — Jun/2026
 
 ---
@@ -107,7 +107,7 @@ Mínimo de **4 métricas** exigidas pelo Tech Challenge, comparando MLP (PyTorch
 
 Para amarrar a avaliação a uma única decisão objetiva, o problema de recomendação é reformulado como **classificação binária de relevância**:
 
-> **Item relevante (`y = 1`)** = usuário demonstrou preferência → no MovieLens, `rating ≥ 4`; em e-commerce real, evento `purchase` ou `add-to-cart`.  
+> **Item relevante (`y = 1`)** = usuário demonstrou preferência → no MovieLens, `rating ≥ 4`; em e-commerce real, evento `purchase` ou `add-to-cart`.
 > **Item não relevante (`y = 0`)** = demais casos (incluindo apenas `view`).
 
 Essa formulação permite usar AUC-ROC, PR-AUC e F1 sobre o score do modelo (probabilidade de relevância).
@@ -241,7 +241,7 @@ raw → preprocess → feature_eng → train → evaluate
 - **Parâmetros versionados:** centralizados em `params.yaml`, rastreados pelo DVC (re-executa o stage só quando o param muda).
 - **Métricas rastreadas:** `evaluate` emite `eval/metrics.json` (RMSE, MAE, nDCG@10, HitRate@10), comparável via `dvc metrics show` e `dvc metrics diff` entre branches/experimentos.
 - **Versionamento:** DVC + remote (local ou S3); `dvc repro` garante reprodução determinística.
-- **Reprodutibilidade:** `RANDOM_SEED=42`, lock file (`poetry.lock`).
+- **Reprodutibilidade:** `RANDOM_SEED=42`, lock file (`uv.lock`).
 
 ---
 
@@ -307,7 +307,7 @@ Item ID ──► Item Embedding ──┘
 
 | Ferramenta            | Função                                                              |
 | --------------------- | ------------------------------------------------------------------- |
-| **Poetry**            | Gerenciamento de dependências + lock file (`poetry.lock`)           |
+| **uv**                | Gerenciamento de dependências + lock file (`uv.lock`)               |
 | **Docker**            | Container multi-stage (builder + runtime)                           |
 | **DVC**               | Versionamento de dados + pipeline reprodutível (`params`/`metrics`) |
 | **MLflow**            | Tracking de experimentos + Model Registry (aliases + tags)          |
@@ -367,7 +367,7 @@ Item ID ──► Item Embedding ──┘
 
 | Ambiente                      | Descrição                                                       |
 | ----------------------------- | --------------------------------------------------------------- |
-| **Local (dev)**               | `poetry install` + Jupyter notebooks + MLflow local (`localhost:5000`) |
+| **Local (dev)**               | `uv sync` + Jupyter notebooks + MLflow local (`localhost:5000`) |
 | **Docker Compose**            | Serviço de treino + MLflow server                               |
 | **Produção (opcional/bônus)** | AWS / Azure / GCP — container com URL pública                   |
 
@@ -412,7 +412,7 @@ Item ID ──► Item Embedding ──┘
 | Critério                | Peso | Status esperado                              |
 | ----------------------- | ---- | -------------------------------------------- |
 | Clean code e estrutura  | 15%  | SOLID, type hints, Factory/Strategy, ruff OK |
-| Reprodutibilidade       | 15%  | poetry.lock, .env, instalação limpa          |
+| Reprodutibilidade       | 15%  | uv.lock, .env, instalação limpa              |
 | Docker                  | 15%  | Multi-stage, compose funcional               |
 | DVC + Pipeline          | 15%  | ≥ 3 stages, `dvc repro` OK                   |
 | Rede neural (PyTorch)   | 15%  | MLP funcional, early stopping, baselines     |
