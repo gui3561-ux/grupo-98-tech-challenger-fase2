@@ -36,8 +36,8 @@ class Settings(BaseSettings):
     mlflow_tracking_uri: str = "http://localhost:5000"
     mlflow_experiment_name: str = "ecommerce-recommender"
 
-    num_users: int = 1502
-    num_items: int = 2598
+    num_users: int = 943
+    num_items: int = 1682
     min_interactions: int = 10
     batch_size: int = 256
     embedding_dim: int = 64
