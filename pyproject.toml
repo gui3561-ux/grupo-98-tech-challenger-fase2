@@ -9,11 +9,11 @@ authors = [
     { name = "Wesley" },
 ]
 readme = "README.md"
-requires-python = ">=3.11"
+requires-python = ">=3.14"
 dependencies = [
     "torch>=2.2.0",
     "scikit-learn>=1.4.0",
-    "mlflow>=2.11.0",
+    "mlflow==3.13.0",
     "dvc>=3.49.0",
     "pandas>=2.2.0",
     "numpy>=1.26.0",

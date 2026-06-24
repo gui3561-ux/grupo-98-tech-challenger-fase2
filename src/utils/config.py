@@ -15,7 +15,7 @@ class Settings(BaseSettings):
     app_env: str = "development"
     random_seed: int = 42
 
-    mlflow_tracking_uri: str = "http://127.0.0.1:5000"
+    mlflow_tracking_uri: str = "http://0.0.0.0:5000"
     mlflow_experiment_name: str = "ecommerce-recommender"
 
     num_users: int = 1502
@@ -36,7 +36,7 @@ class Settings(BaseSettings):
 
     api_host: str = "0.0.0.0"
     api_port: int = 8000
-    api_cors_origins: str = "http://127.0.0.1:5173,http://127.0.0.1:3000"
+    api_cors_origins: str = "http://0.0.0.1:5173,http://0.0.0.1:3000"
 
     @property
     def hidden_dims_list(self) -> list[int]:
