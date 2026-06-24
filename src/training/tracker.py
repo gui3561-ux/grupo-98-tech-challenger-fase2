@@ -18,7 +18,7 @@ class ExperimentTracker:
         self.settings = settings
         mlflow.set_tracking_uri(settings.mlflow_tracking_uri)
         mlflow.set_experiment(settings.mlflow_experiment_name)
-        print(settings.mlflow_experiment_name)
+        # print(settings.mlflow_experiment_name)
 
     def start_run(self, run_name: str | None = None) -> None:
         """Start a new MLflow run."""
@@ -51,7 +51,7 @@ class ExperimentTracker:
             # input_example=input_example, 
             # signature=signature
         )
-        print(model)
+        # print(model)
 
     def log_artifact(self, path: str) -> None:
         """Log a file as an artifact."""

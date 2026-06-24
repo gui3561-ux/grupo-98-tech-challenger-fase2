@@ -117,9 +117,11 @@ $ uv run uvicorn api.app:app --reload
 ### ML FLow:
 
 ```
+$ uv run mlflow server --port 5000 --backend-store-uri sqlite:///mlflow/mlflow.db
+or
 $ mlflow server --host 127.0.0.1 --port 5000 --backend-store-uri sqlite:///mlflow/mlflow.db --default-artifact-root /mlflow/artifacts
 ```
-
+If you decide use the secondd option don't forget to change the .env file (MLFLOW_TRACKING_URI)
 
 ---
 

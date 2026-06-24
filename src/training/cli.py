@@ -26,7 +26,7 @@ def main() -> None:
 
     train_df = pd.read_parquet(features_path / "train.parquet")
     val_df = pd.read_parquet(features_path / "val.parquet")
-
+    
     train_dataset = InteractionDataset(
         train_df["user_idx"].values,
         train_df["item_idx"].values,
@@ -42,7 +42,7 @@ def main() -> None:
         train_dataset, batch_size=settings.batch_size, shuffle=True
     )
     val_loader = DataLoader(val_dataset, batch_size=settings.batch_size, shuffle=False)
-
+    
     model = ModelFactory.create(
         "mlp",
         num_users=encoders["num_users"],
@@ -51,8 +51,11 @@ def main() -> None:
         hidden_dims=settings.hidden_dims_list,
     )
 
+    logger.info("-----ModelFactory---")
+    # breakpoint()
     tracker = ExperimentTracker(settings)
     tracker.start_run(run_name="mlp-training")
+    logger.info("-----ExperimentTracker---")
     tracker.log_params(
         {
             "model": "mlp",
@@ -67,7 +70,7 @@ def main() -> None:
             "random_seed": settings.random_seed,
         }
     )
-
+    
     trainer = Trainer(model, settings)
     history = trainer.fit(train_loader, val_loader)
 
