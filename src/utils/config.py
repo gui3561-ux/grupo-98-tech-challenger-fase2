@@ -15,7 +15,7 @@ class Settings(BaseSettings):
     app_env: str = "development"
     random_seed: int = 42
 
-    mlflow_tracking_uri: str = "http://localhost:5000"
+    mlflow_tracking_uri: str = "http://127.0.0.1:5000"
     mlflow_experiment_name: str = "ecommerce-recommender"
 
     num_users: int = 1502
@@ -29,14 +29,14 @@ class Settings(BaseSettings):
     learning_rate: float = 0.001
     early_stopping_patience: int = 5
 
-    data_raw_path: Path = Path("data/raw")
+    data_raw_path: Path = Path("data/raw/ecommerce")
     data_processed_path: Path = Path("data/processed")
     data_features_path: Path = Path("data/features")
     models_path: Path = Path("models")
 
     api_host: str = "0.0.0.0"
     api_port: int = 8000
-    api_cors_origins: str = "http://localhost:5173,http://localhost:3000"
+    api_cors_origins: str = "http://127.0.0.1:5173,http://127.0.0.1:3000"
 
     @property
     def hidden_dims_list(self) -> list[int]:

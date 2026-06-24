@@ -63,6 +63,7 @@ class JobManager:
                     job.status = Status.FAILED
                     job.completed_at = datetime.now(timezone.utc)
                     job.error = str(e)
+                    print(job.error)
 
         thread = threading.Thread(target=wrapper, daemon=True)
         thread.start()
