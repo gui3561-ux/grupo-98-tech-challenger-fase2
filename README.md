@@ -1,3 +1,4 @@
+
 # E-commerce Recommender — Tech Challenge Fase 02
 
 > Sistema de recomendação de produtos baseado em rede neural (MLP com embeddings, PyTorch),
@@ -95,6 +96,30 @@ uv run python scripts/validate_env.py
 ```
 
 A saída esperada termina com `✓ Ambiente válido. Pronto para rodar o pipeline.`
+
+
+
+## SETUP
+
+
+### Client:
+```
+$ npm run dev
+```
+
+### Api:
+
+```
+$ uv run uvicorn api.app:app --reload  
+```
+
+
+### ML FLow:
+
+```
+$ mlflow server --host 127.0.0.1 --port 5000 --backend-store-uri sqlite:///mlflow/mlflow.db --default-artifact-root /mlflow/artifacts
+```
+
 
 ---
 
