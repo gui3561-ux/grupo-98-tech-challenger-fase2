@@ -1,5 +1,9 @@
 import mlflow
-from torch import nn
+from mlflow.models import ModelSignature
+from mlflow.types import Schema, TensorSpec
+from torch import nn, randn, tensor
+import numpy as np
+
 
 from utils.config import Settings
 from utils.logging import get_logger
@@ -14,6 +18,7 @@ class ExperimentTracker:
         self.settings = settings
         mlflow.set_tracking_uri(settings.mlflow_tracking_uri)
         mlflow.set_experiment(settings.mlflow_experiment_name)
+        print(settings.mlflow_experiment_name)
 
     def start_run(self, run_name: str | None = None) -> None:
         """Start a new MLflow run."""
@@ -29,11 +34,29 @@ class ExperimentTracker:
         mlflow.log_metrics(metrics, step=step)
 
     def log_model(self, model: nn.Module, name: str) -> None:
-        """Log a PyTorch model artifact."""
-        mlflow.pytorch.log_model(model, name)
+        # input_example = tensor([5, 10, 15, 19])
+        # input_example = (tensor([0, 1, 2, 3]), tensor([5, 10, 15, 19]))
+        # input_schema = Schema([
+        #     TensorSpec(type=np.dtype("int64"), shape=(-1,), name="user_ids"),
+        #     TensorSpec(type=np.dtype("int64"), shape=(-1,), name="item_ids"),
+        # ])
+        # signature = ModelSignature(inputs=input_schema)
+        # mlflow.pytorch.log_model(pytorch_model=model, name=name, serialization_format="pt2", input_example=input_example, signature=signature)
+
+        print('-----log_model------')
+        mlflow.pytorch.log_model(
+            pytorch_model=model, 
+            name=name, 
+            # serialization_format="pt2",
+            # input_example=input_example, 
+            # signature=signature
+        )
+        print(model)
 
     def log_artifact(self, path: str) -> None:
         """Log a file as an artifact."""
+        print('------log_artifact------')
+        print(path)
         mlflow.log_artifact(path)
 
     def end_run(self) -> None:

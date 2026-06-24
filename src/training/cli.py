@@ -89,7 +89,7 @@ def main() -> None:
     with open(metrics_path, "w") as f:
         json.dump(metrics, f, indent=2)
 
-    tracker.log_model(model, "mlp-recommender")
+    tracker.log_model(model, name="mlp-recommender")
     tracker.end_run()
     logger.info("Training complete")
 
