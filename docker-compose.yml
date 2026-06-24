@@ -1,0 +1,57 @@
+services:
+  # mlflow:
+  #   image: python:3.14-slim
+  #   container_name: mlflow-server
+  #   command: >
+  #     bash -c "pip install --no-cache-dir mlflow &&
+  #     mlflow server
+  #     --host 127.0.0.1
+  #     --port 5000
+  #     --backend-store-uri sqlite:///mlflow/mlflow.db
+  #     --default-artifact-root /mlflow/artifacts"
+  #   ports:
+  #     - "5000:5000"
+  #   volumes:
+  #     - mlflow-data:/mlflow
+  #   healthcheck:
+  #     test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
+  #     interval: 10s
+  #     timeout: 5s
+  #     retries: 5
+  # mlflow:
+  #   # container_name: mlflow-server
+  #   build:
+  #     context: mlflow-server
+  #     dockerfile: Dockerfile.mlflow
+  #   image: mlflow
+  #   command: >
+  #     bash -h "mlflow server --backend-store-uri 'sqlite:///mlflow/mlflow.db' --default-artifact-root '/mlflow/artifacts' --host 0.0.0.0 --port 5000"
+  #   ports:
+  #     - "5000:5000"
+  #   # volumes:
+  #   #   - ${HOME}/mlruns:/mlflow
+  #   volumes:
+  #     - mlflow-data:/mlflow
+
+  mlflow:
+    #  build:
+    #    context: mlflow-server
+    #    dockerfile: Dockerfile
+     container_name: mlflow-server
+     image: mlflow
+     command: >
+       bash -c "mlflow server
+       --backend-store-uri 'sqlite:///mlflow/mlflow.db'
+       --default-artifact-root mlflow-artifacts:/
+       --serve-artifacts
+       --artifacts-destination /mlflow/artifacts
+       --host 0.0.0.0
+       --port 5000"
+     ports:
+       - "5000:5000"
+     volumes:
+       - mlflow-data:/mlflow
+ 
+
+volumes:
+  mlflow-data:
