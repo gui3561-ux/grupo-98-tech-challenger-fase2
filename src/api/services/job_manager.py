@@ -1,6 +1,6 @@
 import threading
 import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from enum import StrEnum
 
 
@@ -52,16 +52,16 @@ class JobManager:
             job = self._jobs[job_id]
             with self._lock:
                 job.status = Status.RUNNING
-                job.started_at = datetime.now(timezone.utc)
+                job.started_at = datetime.now(UTC)
             try:
                 target()
                 with self._lock:
                     job.status = Status.COMPLETED
-                    job.completed_at = datetime.now(timezone.utc)
+                    job.completed_at = datetime.now(UTC)
             except Exception as e:
                 with self._lock:
                     job.status = Status.FAILED
-                    job.completed_at = datetime.now(timezone.utc)
+                    job.completed_at = datetime.now(UTC)
                     job.error = str(e)
                     print(job.error)
 

@@ -34,6 +34,7 @@ async def trigger_feature_engineering(request: Request) -> JobCreated:
 @router.post("/training", status_code=202, response_model=JobCreated)
 async def trigger_training(request: Request) -> JobCreated:
     from training.cli import main
+
     print(f" xxxx --> {main}")
     return _trigger_step(request, "training", main)
 
@@ -51,10 +52,10 @@ async def reload_model(request: Request) -> dict:
     try:
         inference.load_model()
         return {"message": "Model reloaded successfully"}
-    except FileNotFoundError:
+    except FileNotFoundError as exc:
         raise HTTPException(
             status_code=404, detail="Model file not found. Run training first."
-        )
+        ) from exc
 
 
 @router.get("/jobs", response_model=list[JobStatusResponse])

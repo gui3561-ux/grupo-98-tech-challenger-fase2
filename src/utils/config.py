@@ -29,7 +29,7 @@ class Settings(BaseSettings):
     learning_rate: float = 0.001
     early_stopping_patience: int = 5
 
-    data_raw_path: Path = Path("data/raw/ecommerce")
+    data_raw_path: Path = Path("data/raw")
     data_processed_path: Path = Path("data/processed")
     data_features_path: Path = Path("data/features")
     models_path: Path = Path("models")
