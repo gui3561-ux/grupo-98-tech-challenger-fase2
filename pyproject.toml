@@ -9,7 +9,7 @@ authors = [
     { name = "Wesley" },
 ]
 readme = "README.md"
-requires-python = ">=3.14"
+requires-python = ">=3.11"
 dependencies = [
     "torch>=2.2.0",
     "scikit-learn>=1.4.0",
