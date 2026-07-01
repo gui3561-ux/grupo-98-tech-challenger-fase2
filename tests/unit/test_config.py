@@ -1,5 +1,5 @@
-from utils.config import Settings
-from ecommerce_recommender.config import Settings, get_settings
+from ecommerce_recommender.config import Settings
+
 
 class TestSettings:
     def test_default_values(self) -> None:

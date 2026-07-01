@@ -110,7 +110,7 @@ $ npm run dev
 ### Api:
 
 ```
-$ uv run uvicorn api.app:app --reload  
+$ uv run uvicorn api.app:app --reload
 ```
 
 
@@ -202,6 +202,124 @@ uv run pre-commit run --all-files
 > Nota sobre o gerenciador: o enunciado cita "pyproject.toml com **Poetry/uv**".
 > Optamos por **uv** (equivalente moderno, com lock file e instalação reprodutível),
 > escolha alinhada com a orientação dos professores.
+
+## Model Card
+
+### Detalhes do Modelo
+
+| | |
+|---|---|
+| **Nome do modelo** | `ecommerce-mlp-recommender` |
+| **Tipo de modelo** | Multi-Layer Perceptron (MLP) baseado em embeddings |
+| **Framework** | PyTorch |
+| **Versão** | 1 (registrada no MLflow Model Registry) |
+| **Status** | `@production`, `@staging` |
+| **Objetivo de treino** | Predição de rating (regressão), MSELoss |
+| **Arquitetura** | `user_embedding + item_embedding → concat → MLP(128,64,32) → Sigmoid` |
+| **Entrada** | `user_id` (int), `item_id` (int) |
+| **Saída** | Rating previsto, normalizado para [0, 1] |
+
+### Uso Pretendido
+
+Este modelo prevê o quanto um usuário tende a avaliar bem um filme, e
+ranqueia o catálogo de acordo para gerar recomendações top-K. É indicado
+para **cenários de recomendação exploratórios e não críticos** (ex:
+widgets do tipo "você também pode gostar") — não para decisões com
+consequências de segurança, financeiras ou legais.
+
+### Dados de Treino
+
+| | |
+|---|---|
+| **Dataset** | MovieLens 100K (GroupLens Research) |
+| **Tamanho** | 100.000 ratings · 943 usuários · 1.682 filmes |
+| **Tipo de feedback** | Explícito (ratings de 1 a 5 estrelas) |
+| **Estratégia de split** | Temporal 80/10/10 (treino/validação/teste) — evita vazamento de dados futuros |
+| **Mínimo de interações por usuário** | 20 (garantido pelo próprio dataset) |
+| **Esparsidade** | ~93,7% |
+
+**Nota sobre a escolha do dataset:** o RetailRocket Ecommerce Dataset
+(2,7M eventos implícitos) foi avaliado primeiro e descartado. 96,7% dos
+seus eventos eram ações de "view", que mapeiam para um rating
+normalizado de 0.0 — deixando a maioria dos usuários com histórico de
+interação completamente zerado e sem sinal aproveitável para o modelo
+aprender preferências. A análise completa está documentada em
+`notebooks/01_eda_retailrocket.ipynb` e
+`notebooks/03_model_experiments_retailrocket.ipynb`.
+
+### Performance
+
+Avaliado no conjunto de teste temporal (10.000 ratings):
+
+| Modelo | RMSE ↓ | Precision@10 ↑ | Recall@10 ↑ | nDCG@10 ↑ |
+|---|---|---|---|---|
+| **MLP (este modelo)** | **0,2730** | 0,1301 | 0,0201 | 0,1454 |
+| Baseline Popularity | 0,7050 | **0,2392** | **0,0449** | **0,2494** |
+| Baseline SVD | 0,6980 | 0,0669 | 0,0080 | 0,0575 |
+
+- O MLP alcança um **RMSE 2,6x menor** que ambos os baselines, indicando
+  predição de rating substancialmente mais precisa.
+- O baseline Popularity supera o MLP nas métricas de ranking
+  (Precision@10, Recall@10, nDCG@10). Ver *Limitações* abaixo para a
+  explicação técnica.
+- O SVD performa pior em todas as métricas, provavelmente devido ao
+  número limitado de usuários (943) em relação à quantidade de fatores
+  latentes escolhida (50).
+
+### Limitações
+
+1. **Trade-off entre ranking e predição de rating.** O MLP é treinado
+   com `MSELoss`, que otimiza para valores de rating precisos, não para
+   a *ordenação* dos itens recomendados. Isso explica por que um
+   baseline de Popularity, muito mais simples, supera o MLP nas métricas
+   específicas de ranking. Uma loss orientada a ranking (ex: Bayesian
+   Personalised Ranking — BPR) provavelmente reduziria essa diferença;
+   isso está documentado como trabalho futuro.
+
+2. **Usuários e itens cold-start.** O modelo não consegue gerar
+   recomendações significativas para usuários ou itens ausentes do
+   conjunto de treino, já que os embeddings só existem para IDs vistos
+   durante o treino.
+
+3. **Atualidade do dataset.** O MovieLens 100K foi coletado entre
+   1997-1998. As preferências dos usuários e o catálogo de filmes não
+   refletem o comportamento de consumo atual.
+
+4. **Escala.** O modelo foi validado com 943 usuários e 1.682 itens.
+   O comportamento em escala de produção de e-commerce real (milhões de
+   usuários/itens) não foi testado e exigiria revalidação, principalmente
+   quanto ao consumo de memória das tabelas de embedding e à latência de
+   inferência.
+
+### Vieses Conhecidos
+
+1. **Viés de popularidade.** Como a maioria dos modelos de filtragem
+   colaborativa treinados com sinais implícitos de ranking, o MLP tende
+   a favorecer itens com mais interações históricas, já que aparecem
+   com mais frequência nos batches de treino. Isso pode sub-expor itens
+   de nicho ou novos (efeito "rich get richer").
+
+2. **Viés demográfico nos dados de treino.** A base de usuários do
+   MovieLens 100K é aproximadamente 71% masculina, com idade média de
+   34 anos. As recomendações podem refletir preferências enviesadas
+   para essa demografia e não generalizar igualmente bem para grupos
+   sub-representados no dataset.
+
+3. **Viés de gênero (de filme).** Drama é o gênero dominante em número
+   de filmes no catálogo, o que pode enviesar as recomendações para
+   Drama mesmo para usuários que não expressaram essa preferência
+   explicitamente.
+
+### Reprodutibilidade
+
+| | |
+|---|---|
+| **Seed aleatória** | 42 (fixada em NumPy, PyTorch e nos splits de dados) |
+| **Script de treino** | `uv run python -m training.cli` |
+| **Script de avaliação** | `uv run python scripts/compare_models.py` |
+| **Script de registro** | `uv run python scripts/register_model.py` |
+| **Rastreamento de experimentos** | MLflow (`mlflow_experiment_name=ecommerce-recommender`) |
+
 
 ---
 

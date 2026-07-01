@@ -1,14 +1,15 @@
 import mlflow
-from mlflow.models import ModelSignature
-from mlflow.types import Schema, TensorSpec
-from torch import nn, randn, tensor
-import numpy as np
-
+from torch import nn, tensor
 
 from utils.config import Settings
 from utils.logging import get_logger
 
 logger = get_logger(__name__)
+
+
+def sanitize_metrics(metrics_dict):
+    """Replace the '@' character with '_' for compatibility with MLflow."""
+    return {k.replace("@", "_"): v for k, v in metrics_dict.items()}
 
 
 class ExperimentTracker:
@@ -31,31 +32,36 @@ class ExperimentTracker:
 
     def log_metrics(self, metrics: dict[str, float], step: int | None = None) -> None:
         """Log metrics to the active run."""
-        mlflow.log_metrics(metrics, step=step)
+        clean_metrics = sanitize_metrics(metrics)
+        mlflow.log_metrics(clean_metrics, step=step)
 
     def log_model(self, model: nn.Module, name: str) -> None:
-        # input_example = tensor([5, 10, 15, 19])
-        # input_example = (tensor([0, 1, 2, 3]), tensor([5, 10, 15, 19]))
+        tensor([5, 10, 15, 19])
+        (tensor([0, 1, 2, 3]), tensor([5, 10, 15, 19]))
         # input_schema = Schema([
         #     TensorSpec(type=np.dtype("int64"), shape=(-1,), name="user_ids"),
         #     TensorSpec(type=np.dtype("int64"), shape=(-1,), name="item_ids"),
         # ])
         # signature = ModelSignature(inputs=input_schema)
-        # mlflow.pytorch.log_model(pytorch_model=model, name=name, serialization_format="pt2", input_example=input_example, signature=signature)
+        # mlflow.pytorch.log_model(pytorch_model=model,
+        #                          name=name,
+        #                          serialization_format="pt2",
+        #                          input_example=input_example,
+        #                          signature=signature)
 
-        print('-----log_model------')
+        print("-----log_model------")
         mlflow.pytorch.log_model(
-            pytorch_model=model, 
-            name=name, 
+            pytorch_model=model,
+            artifact_path=name,
             # serialization_format="pt2",
-            # input_example=input_example, 
+            # input_example=input_example,
             # signature=signature
         )
         # print(model)
 
     def log_artifact(self, path: str) -> None:
         """Log a file as an artifact."""
-        print('------log_artifact------')
+        print("------log_artifact------")
         print(path)
         mlflow.log_artifact(path)
 
