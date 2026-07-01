@@ -26,7 +26,7 @@ def main() -> None:
 
     train_df = pd.read_parquet(features_path / "train.parquet")
     val_df = pd.read_parquet(features_path / "val.parquet")
-    
+
     train_dataset = InteractionDataset(
         train_df["user_idx"].values,
         train_df["item_idx"].values,
@@ -42,7 +42,7 @@ def main() -> None:
         train_dataset, batch_size=settings.batch_size, shuffle=True
     )
     val_loader = DataLoader(val_dataset, batch_size=settings.batch_size, shuffle=False)
-    
+
     model = ModelFactory.create(
         "mlp",
         num_users=encoders["num_users"],
@@ -70,11 +70,13 @@ def main() -> None:
             "random_seed": settings.random_seed,
         }
     )
-    
+
     trainer = Trainer(model, settings)
     history = trainer.fit(train_loader, val_loader)
 
-    for epoch, (tl, vl) in enumerate(zip(history["train_loss"], history["val_loss"])):
+    for epoch, (tl, vl) in enumerate(
+        zip(history["train_loss"], history["val_loss"], strict=False)
+    ):
         tracker.log_metrics({"train_loss": tl, "val_loss": vl}, step=epoch)
 
     models_path = settings.models_path

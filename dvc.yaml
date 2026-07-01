@@ -1,14 +1,12 @@
 stages:
   preprocess:
-    cmd: uv run python -m preprocessing.cli
+    cmd: uv run python scripts/build_movielens_interactions.py
     deps:
-      - data/raw/events.csv
-      - src/preprocessing/strategies.py
-      - src/preprocessing/pipeline.py
-      - src/preprocessing/cli.py
+      - data/raw/ml-100k/u.data
+      - scripts/build_movielens_interactions.py
+      - src/utils/config.py
     params:
       - params.yaml:
-          - preprocessing.min_interactions
           - seed
     outs:
       - data/processed/interactions.parquet
@@ -59,4 +57,25 @@ stages:
           - seed
     metrics:
       - models/eval_metrics.json:
+          cache: false
+
+  compare_models:
+    cmd: uv run python scripts/compare_models.py
+    deps:
+      - data/features/train.parquet
+      - data/features/test.parquet
+      - data/features/encoders.json
+      - models/model.pt
+      - scripts/compare_models.py
+      - src/evaluation/
+      - src/models/
+      - src/training/dataset.py
+      - src/training/tracker.py
+    params:
+      - params.yaml:
+          - evaluation
+          - training
+          - seed
+    metrics:
+      - models/model_comparison.json:
           cache: false
