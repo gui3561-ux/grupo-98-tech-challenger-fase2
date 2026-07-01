@@ -42,27 +42,29 @@ export default function App() {
 
         <UserSearch onSearch={handleSearch} isLoading={isLoading} />
 
-        {error && (
-          <div className="mt-4 rounded-lg border border-red-200 bg-red-50 p-4 text-red-700">
-            {error}
-          </div>
-        )}
-
-        {result && (
-          <div className="mt-8">
-            <h2 className="mb-4 text-lg font-semibold text-gray-800">
-              Recommendations for user:{" "}
-              <span className="text-blue-600">{result.user_id}</span>
-            </h2>
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              {result.recommendations.map((rec) => (
-                <RecommendationCard key={rec.item_id} recommendation={rec} />
-              ))}
+        <div id="recommendations-box">
+          {error && (
+            <div className="mt-4 rounded-lg border border-red-200 bg-red-50 p-4 text-red-700">
+              {error}
             </div>
-          </div>
-        )}
+          )}
 
-        <div className="mt-10">
+          {result && (
+            <div className="mt-8">
+              <h2 className="mb-4 text-lg font-semibold text-gray-800">
+                Recommendations for user:{" "}
+                <span className="text-blue-600">{result.user_id}</span>
+              </h2>
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                {result.recommendations.map((rec) => (
+                  <RecommendationCard key={rec.item_id} recommendation={rec} />
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+
+        <div className="mt-10" id="control-panel">
           <PipelinePanel />
         </div>
       </div>
