@@ -27,7 +27,7 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-gray-50 px-4 py-10">
-      <div className="mx-auto max-w-3xl">
+      <div className="mx-auto max-w-6xl">
         <header className="mb-8 text-center">
           <h1 className="text-3xl font-bold text-gray-900">
             Recommender Test Client
@@ -42,30 +42,35 @@ export default function App() {
 
         <UserSearch onSearch={handleSearch} isLoading={isLoading} />
 
-        <div id="recommendations-box">
-          {error && (
-            <div className="mt-4 rounded-lg border border-red-200 bg-red-50 p-4 text-red-700">
-              {error}
-            </div>
-          )}
-
-          {result && (
-            <div className="mt-8">
-              <h2 className="mb-4 text-lg font-semibold text-gray-800">
-                Recommendations for user:{" "}
-                <span className="text-blue-600">{result.user_id}</span>
-              </h2>
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                {result.recommendations.map((rec) => (
-                  <RecommendationCard key={rec.item_id} recommendation={rec} />
-                ))}
+        <div className="mt-6 flex flex-col gap-6 lg:flex-row lg:items-start">
+          <div id="recommendations-box" className="lg:flex-1">
+            {error && (
+              <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-red-700">
+                {error}
               </div>
-            </div>
-          )}
-        </div>
+            )}
 
-        <div className="mt-10" id="control-panel">
-          <PipelinePanel />
+            {result && (
+              <div>
+                <h2 className="mb-4 text-lg font-semibold text-gray-800">
+                  Recommendations for user:{" "}
+                  <span className="text-blue-600">{result.user_id}</span>
+                </h2>
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  {result.recommendations.map((rec) => (
+                    <RecommendationCard
+                      key={rec.item_id}
+                      recommendation={rec}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
+          <div id="control-panel" className="lg:w-100">
+            <PipelinePanel />
+          </div>
         </div>
       </div>
     </div>

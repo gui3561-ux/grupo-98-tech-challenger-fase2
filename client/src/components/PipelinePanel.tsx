@@ -9,7 +9,7 @@ import type { PipelineJob } from "../types";
 
 const STAGES = [
   { key: "preprocessing", label: "Preprocessing" },
-  { key: "feature-engineering", label: "Feature Engineering" },
+  { key: "feature_engineering", label: "Feature Engineering" },
   { key: "training", label: "Training" },
   { key: "evaluation", label: "Evaluation" },
 ] as const;
@@ -23,6 +23,7 @@ export function PipelinePanel() {
   async function handleTrigger(
     stage: (typeof STAGES)[number]["key"]
   ) {
+    console.log("stage", stage);
     setError(null);
     setMessage(null);
     setLoading(true);
@@ -136,14 +137,16 @@ export function PipelinePanel() {
                 <th className="pb-2 pr-4">Job ID</th>
                 <th className="pb-2 pr-4">Stage</th>
                 <th className="pb-2 pr-4">Status</th>
-                <th className="pb-2" />
               </tr>
             </thead>
             <tbody>
               {jobs.map((job) => (
                 <tr key={job.job_id} className="border-b last:border-0">
-                  <td className="py-2 pr-4 font-mono text-xs">
-                    {job.job_id}
+                  <td
+                    className="py-2 pr-4 font-mono text-xs"
+                    style={{ overflow: "hidden" }}
+                  >
+                    {job.job_id.slice(0, 8)}
                   </td>
                   <td className="py-2 pr-4">{job.step}</td>
                   <td className="py-2 pr-4">
@@ -152,8 +155,6 @@ export function PipelinePanel() {
                     >
                       {job.status}
                     </span>
-                  </td>
-                  <td className="py-2">
                     <button
                       onClick={() => handleRefreshJob(job.job_id)}
                       className="text-xs text-blue-600 hover:underline"
