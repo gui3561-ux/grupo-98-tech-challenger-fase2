@@ -17,6 +17,7 @@ async def get_recommendations(
         )
 
     results = inference.recommend(user_id, top_k=top_k)
+    print('Recommendation ==>', results)
 
     if results is None:
         raise HTTPException(status_code=404, detail="User not found")
