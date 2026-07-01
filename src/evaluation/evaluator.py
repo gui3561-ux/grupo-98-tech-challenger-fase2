@@ -19,7 +19,26 @@ class ModelEvaluator:
     def __init__(self, model: nn.Module, top_k: int = 10) -> None:
         self.model = model
         self.top_k = top_k
-        self.device = next(model.parameters()).device
+        self.device = self._resolve_device(model)
+
+    @staticmethod
+    def _resolve_device(model: nn.Module) -> torch.device:
+        """Resolve the model's device, defaulting to CPU if parameterless.
+
+        Some baseline models (e.g. PopularityRecommender, SVDRecommender)
+        have no trainable parameters and therefore no device to infer
+        from `model.parameters()`. In that case, CPU is used.
+
+        Args:
+            model: Model instance, possibly without trainable parameters.
+
+        Returns:
+            The device of the model's first parameter, or CPU as fallback.
+        """
+        try:
+            return next(model.parameters()).device
+        except StopIteration:
+            return torch.device("cpu")
 
     def compute_rmse(self, dataloader: DataLoader) -> float:
         """Compute RMSE over all predictions."""

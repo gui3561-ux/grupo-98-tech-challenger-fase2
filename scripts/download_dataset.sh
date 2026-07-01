@@ -1,4 +1,10 @@
 #!/bin/bash
 
-#https://www.kaggle.com/datasets/retailrocket/ecommerce-dataset
-curl -L -o ../data/raw/ecommerce.zip https://www.kaggle.com/api/v1/datasets/download/retailrocket/ecommerce-dataset 
+set -e
+
+mkdir -p data/raw
+
+curl -L -o data/raw/ml-100k.zip \
+  https://files.grouplens.org/datasets/movielens/ml-100k.zip
+
+unzip -o data/raw/ml-100k.zip -d data/raw
