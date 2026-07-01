@@ -58,12 +58,14 @@ def main() -> None:
     metrics = evaluator.evaluate(test_loader, test_user_items, encoders["num_items"])
 
     metrics_path = settings.models_path / "eval_metrics.json"
+    print('-->', metrics_path)
     with open(metrics_path, "w") as f:
         json.dump(metrics, f, indent=2)
     logger.info("Saved evaluation metrics to %s", metrics_path)
 
     tracker = ExperimentTracker(settings)
     tracker.start_run(run_name="mlp-evaluation")
+    print(' Metrics --> ',metrics)
     tracker.log_metrics(metrics)
     tracker.log_artifact(str(metrics_path))
     tracker.end_run()
