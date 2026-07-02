@@ -1,4 +1,6 @@
 [core]
-    remote = local_storage
+    remote = gdrive
 ['remote "local_storage"']
     url = /tmp/dvc-storage
+['remote "gdrive"']
+    url = gdrive://1EwOpoSFQ7rYZs_VDNc2QJPLrY-RBTocK
