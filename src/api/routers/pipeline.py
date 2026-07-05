@@ -7,7 +7,7 @@ router = APIRouter(prefix="/api/pipeline")
 
 def _trigger_step(request: Request, step: str, target: callable) -> JobCreated:
     job_manager = request.app.state.job_manager
-    print(f" --> {job_manager}")
+    print(f" -->>> {step}")
 
     if job_manager.has_running_job(step):
         raise HTTPException(status_code=409, detail=f"{step} is already running")
@@ -27,7 +27,6 @@ async def trigger_preprocessing(request: Request) -> JobCreated:
 @router.post("/feature-engineering", status_code=202, response_model=JobCreated)
 async def trigger_feature_engineering(request: Request) -> JobCreated:
     from preprocessing.feature_cli import main
-
     return _trigger_step(request, "feature_engineering", main)
 
 

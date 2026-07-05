@@ -16,7 +16,7 @@ export async function checkHealth(): Promise<HealthResponse> {
 
 type PipelineStage =
   | "preprocessing"
-  | "feature_engineering"
+  | "feature-engineering"
   | "training"
   | "evaluation";
 

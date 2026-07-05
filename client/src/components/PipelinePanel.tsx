@@ -9,7 +9,7 @@ import type { PipelineJob } from "../types";
 
 const STAGES = [
   { key: "preprocessing", label: "Preprocessing" },
-  { key: "feature_engineering", label: "Feature Engineering" },
+  { key: "feature-engineering", label: "Feature Engineering" },
   { key: "training", label: "Training" },
   { key: "evaluation", label: "Evaluation" },
 ] as const;
