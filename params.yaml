@@ -1,15 +1,12 @@
-preprocessing:
-  min_interactions: 10
+seed: 42
 
 training:
   batch_size: 256
   learning_rate: 0.001
   num_epochs: 50
   embedding_dim: 64
-  hidden_dims: [128, 64, 32]
+  hidden_dims: "128,64,32"
   early_stopping_patience: 5
 
 evaluation:
   top_k: 10
-
-seed: 42
