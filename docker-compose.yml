@@ -1,4 +1,5 @@
 services:
+
   mlflow:
     image: ghcr.io/mlflow/mlflow:v2.11.0
     container_name: mlflow-server
@@ -18,6 +19,31 @@ services:
       timeout: 5s
       retries: 5
 
+  trainer:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ecommerce-trainer
+    command: >
+      sh -c "
+        python scripts/build_movielens_interactions.py &&
+        python -m preprocessing.feature_cli &&
+        python -m training.cli &&
+        python scripts/compare_models.py &&
+        python scripts/register_model.py
+      "
+    environment:
+      MLFLOW_TRACKING_URI: http://mlflow:5000
+      MLFLOW_EXPERIMENT_NAME: ecommerce-recommender
+    volumes:
+      - ./data:/app/data
+      - ./models:/app/models
+    depends_on:
+      mlflow:
+        condition: service_healthy
+    profiles:
+      - training
+
   api:
     build:
       context: .
@@ -27,6 +53,7 @@ services:
       - "8000:8000"
     environment:
       MLFLOW_TRACKING_URI: http://mlflow:5000
+      MLFLOW_EXPERIMENT_NAME: ecommerce-recommender
     volumes:
       - ./models:/app/models:ro
       - ./data/features:/app/data/features:ro
