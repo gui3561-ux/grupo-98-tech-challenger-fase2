@@ -9,8 +9,8 @@ stages:
       size: 1979173
     - path: scripts/build_movielens_interactions.py
       hash: md5
-      md5: ea6e5623689a724d89b5329d531638e2
-      size: 1937
+      md5: 0ec1c0e13ea6ccea9af42cf8b831ef53
+      size: 1938
     - path: src/utils/config.py
       hash: md5
       md5: c64fc100cae520a4d2cd33f1ca7c8e9b
@@ -36,8 +36,8 @@ stages:
       size: 1356
     - path: src/preprocessing/feature_engineering.py
       hash: md5
-      md5: 4f873917013e77ebe28cac4b94cde4ca
-      size: 2686
+      md5: 3f65fff8ac45cb7f06ccaedf902d55c2
+      size: 2687
     params:
       params.yaml:
         seed: 42
@@ -73,16 +73,30 @@ stages:
       hash: md5
       md5: cade91771869023d57a4933ea73f687c
       size: 89715
-    - path: src/models/
+    - path: src/models/factory.py
       hash: md5
-      md5: e64b7caeef7bedc192bf4ebe64e5f9a7.dir
-      size: 36457
-      nfiles: 12
-    - path: src/training/
+      md5: c394326cb22d8621103ab056745cec7a
+      size: 1028
+    - path: src/models/mlp.py
       hash: md5
-      md5: d1a1a46b04826ab63e0533dc67ccb7c3.dir
-      size: 47509
-      nfiles: 15
+      md5: 53a61db01a1b7e16b5f0dfe823e8107d
+      size: 1599
+    - path: src/training/cli.py
+      hash: md5
+      md5: 503ac2bc5cd9b88019c19d7a9e5d8110
+      size: 3270
+    - path: src/training/dataset.py
+      hash: md5
+      md5: 2d29d83bc3a8e9073fc5d1612bf1de7b
+      size: 686
+    - path: src/training/tracker.py
+      hash: md5
+      md5: 9f15b0c2973a2440e5232dae1fbaac99
+      size: 2546
+    - path: src/training/trainer.py
+      hash: md5
+      md5: 61fe8016cc3da4f67f65161395640feb
+      size: 3502
     params:
       params.yaml:
         seed: 42
@@ -91,10 +105,7 @@ stages:
           learning_rate: 0.001
           num_epochs: 50
           embedding_dim: 64
-          hidden_dims:
-          - 128
-          - 64
-          - 32
+          hidden_dims: 128,64,32
           early_stopping_patience: 5
     outs:
     - path: models/model.pt
@@ -120,11 +131,18 @@ stages:
       hash: md5
       md5: 6c80bf8782018327dfd4c4a6222d395c
       size: 789914
-    - path: src/evaluation/
+    - path: src/evaluation/cli.py
       hash: md5
-      md5: 9f495142344e34cd42a00b5faa43005e.dir
-      size: 22356
-      nfiles: 8
+      md5: 3435dad4c5da21f1821c5b5125ce0912
+      size: 2372
+    - path: src/evaluation/evaluator.py
+      hash: md5
+      md5: 23665fef45a1c9b0146834230efa5952
+      size: 3659
+    - path: src/evaluation/metrics.py
+      hash: md5
+      md5: 4f6e56f30c0b531b1ffbe211138d74d0
+      size: 1275
     params:
       params.yaml:
         evaluation:
@@ -156,26 +174,36 @@ stages:
       size: 789914
     - path: scripts/compare_models.py
       hash: md5
-      md5: 3294af16ab7d0832354e0fa0e02a63c8
-      size: 5147
-    - path: src/evaluation/
+      md5: 1ec259decaf3f8d7c039bc7e7a2747b2
+      size: 5063
+    - path: src/evaluation/evaluator.py
       hash: md5
-      md5: 9f495142344e34cd42a00b5faa43005e.dir
-      size: 22356
-      nfiles: 8
-    - path: src/models/
+      md5: 23665fef45a1c9b0146834230efa5952
+      size: 3659
+    - path: src/evaluation/metrics.py
       hash: md5
-      md5: e64b7caeef7bedc192bf4ebe64e5f9a7.dir
-      size: 36457
-      nfiles: 12
+      md5: 4f6e56f30c0b531b1ffbe211138d74d0
+      size: 1275
+    - path: src/models/baseline.py
+      hash: md5
+      md5: 67e9b1d35347e432f0023d486cc308db
+      size: 4768
+    - path: src/models/factory.py
+      hash: md5
+      md5: c394326cb22d8621103ab056745cec7a
+      size: 1028
+    - path: src/models/mlp.py
+      hash: md5
+      md5: 53a61db01a1b7e16b5f0dfe823e8107d
+      size: 1599
     - path: src/training/dataset.py
       hash: md5
       md5: 2d29d83bc3a8e9073fc5d1612bf1de7b
       size: 686
     - path: src/training/tracker.py
       hash: md5
-      md5: 26f571345576989075595de32d7d17da
-      size: 2551
+      md5: 9f15b0c2973a2440e5232dae1fbaac99
+      size: 2546
     params:
       params.yaml:
         evaluation:
@@ -186,10 +214,7 @@ stages:
           learning_rate: 0.001
           num_epochs: 50
           embedding_dim: 64
-          hidden_dims:
-          - 128
-          - 64
-          - 32
+          hidden_dims: 128,64,32
           early_stopping_patience: 5
     outs:
     - path: models/model_comparison.json

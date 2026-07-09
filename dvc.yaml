@@ -32,8 +32,12 @@ stages:
       - data/features/train.parquet
       - data/features/val.parquet
       - data/features/encoders.json
-      - src/models/
-      - src/training/
+      - src/models/mlp.py
+      - src/models/factory.py
+      - src/training/trainer.py
+      - src/training/cli.py
+      - src/training/dataset.py
+      - src/training/tracker.py
     params:
       - params.yaml:
           - training
@@ -50,7 +54,9 @@ stages:
       - data/features/test.parquet
       - data/features/encoders.json
       - models/model.pt
-      - src/evaluation/
+      - src/evaluation/evaluator.py
+      - src/evaluation/metrics.py
+      - src/evaluation/cli.py
     params:
       - params.yaml:
           - evaluation
@@ -67,8 +73,11 @@ stages:
       - data/features/encoders.json
       - models/model.pt
       - scripts/compare_models.py
-      - src/evaluation/
-      - src/models/
+      - src/evaluation/evaluator.py
+      - src/evaluation/metrics.py
+      - src/models/baseline.py
+      - src/models/factory.py
+      - src/models/mlp.py
       - src/training/dataset.py
       - src/training/tracker.py
     params:
@@ -79,3 +88,14 @@ stages:
     metrics:
       - models/model_comparison.json:
           cache: false
+
+  register:
+    cmd: uv run python scripts/register_model.py
+    deps:
+      - models/model.pt
+      - data/features/encoders.json
+      - scripts/register_model.py
+      - src/training/tracker.py
+    params:
+      - params.yaml:
+          - seed
