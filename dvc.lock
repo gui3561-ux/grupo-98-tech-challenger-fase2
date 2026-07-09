@@ -1,16 +1,24 @@
 schema: '2.0'
 stages:
   preprocess:
-    cmd: uv run python scripts/build_movielens_interactions.py
+    cmd: uv run python -m preprocessing.cli
     deps:
     - path: data/raw/ml-100k/u.data
       hash: md5
       md5: 6e47046882bad158b0efbb84cd5cb987
       size: 1979173
-    - path: scripts/build_movielens_interactions.py
+    - path: src/preprocessing/cli.py
       hash: md5
-      md5: 0ec1c0e13ea6ccea9af42cf8b831ef53
-      size: 1938
+      md5: fda2b1910cddba0a06809d76ec58f7f6
+      size: 1728
+    - path: src/preprocessing/pipeline.py
+      hash: md5
+      md5: 18915ff431197724bdddc630cad5f39f
+      size: 713
+    - path: src/preprocessing/strategies.py
+      hash: md5
+      md5: 43f75c5e48cb3748fd9ea75ceb74e119
+      size: 2348
     - path: src/utils/config.py
       hash: md5
       md5: c64fc100cae520a4d2cd33f1ca7c8e9b
@@ -21,8 +29,8 @@ stages:
     outs:
     - path: data/processed/interactions.parquet
       hash: md5
-      md5: 1fe06e87a14e85ead595dac2d3a3150f
-      size: 770271
+      md5: d120b0e88e6727afec8780952827f180
+      size: 755049
   feature_engineering:
     cmd: uv run python -m preprocessing.feature_cli
     deps:

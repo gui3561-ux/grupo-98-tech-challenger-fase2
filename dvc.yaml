@@ -1,9 +1,11 @@
 stages:
   preprocess:
-    cmd: uv run python scripts/build_movielens_interactions.py
+    cmd: uv run python -m preprocessing.cli
     deps:
       - data/raw/ml-100k/u.data
-      - scripts/build_movielens_interactions.py
+      - src/preprocessing/cli.py
+      - src/preprocessing/pipeline.py
+      - src/preprocessing/strategies.py
       - src/utils/config.py
     params:
       - params.yaml:
