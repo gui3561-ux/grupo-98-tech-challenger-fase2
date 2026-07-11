@@ -27,6 +27,7 @@ async def trigger_preprocessing(request: Request) -> JobCreated:
 @router.post("/feature-engineering", status_code=202, response_model=JobCreated)
 async def trigger_feature_engineering(request: Request) -> JobCreated:
     from preprocessing.feature_cli import main
+
     return _trigger_step(request, "feature_engineering", main)
 
 
@@ -43,6 +44,56 @@ async def trigger_evaluation(request: Request) -> JobCreated:
     from evaluation.cli import main
 
     return _trigger_step(request, "evaluation", main)
+
+
+@router.post("/full", status_code=202, response_model=JobCreated)
+async def trigger_full_pipeline(request: Request) -> JobCreated:
+    """
+    Dispara o pipeline completo em sequência.
+
+    Executa as etapas na ordem correta:
+        preprocessing -> feature_engineering -> training -> evaluation -> reload_model
+
+    Retorna um job_id para acompanhar o progresso via GET /api/pipeline/jobs/{job_id}.
+    Se qualquer etapa falhar, o pipeline para e o erro é registrado no job.
+    """
+    job_manager = request.app.state.job_manager
+
+    if job_manager.has_running_job("full_pipeline"):
+        raise HTTPException(
+            status_code=409,
+            detail="Full pipeline is already running.",
+        )
+
+    def run_full_pipeline() -> None:
+        """Executa cada etapa do pipeline em sequência."""
+        from evaluation.cli import main as evaluate
+        from preprocessing.cli import main as preprocess
+        from preprocessing.feature_cli import main as feature_engineering
+        from training.cli import main as train
+
+        steps = [
+            ("preprocessing", preprocess),
+            ("feature_engineering", feature_engineering),
+            ("training", train),
+            ("evaluation", evaluate),
+        ]
+        for step_name, step_fn in steps:
+            print(f"[full_pipeline] Starting step: {step_name}")
+            step_fn()
+            print(f"[full_pipeline] Completed step: {step_name}")
+
+        inference = request.app.state.inference
+        inference.load_model()
+        print("[full_pipeline] Model reloaded successfully.")
+
+    job_id = job_manager.create_job("full_pipeline")
+    job_manager.run_in_background(job_id, run_full_pipeline)
+
+    return JobCreated(
+        job_id=job_id,
+        message="Full pipeline started. Track progress at /api/pipeline/jobs/{job_id}",
+    )
 
 
 @router.post("/reload-model")
