@@ -1,207 +1,352 @@
+# E-Commerce Recommender System
 
-# E-commerce Recommender — Tech Challenge Fase 02
+Sistema de recomendação de produtos baseado em redes neurais com pipeline MLOps completo.
 
-> Sistema de recomendação de produtos baseado em rede neural (MLP com embeddings, PyTorch),
-> com pipeline MLOps reprodutível (uv, DVC, MLflow e Docker).
->
-> **FIAP** · Pós-Graduação em Machine Learning Engineering · **Grupo 98**
+Desenvolvido como Tech Challenge Fase 02 — Pós-Tech FIAP.
 
 ---
 
-## Visão geral
+## Visão Geral
 
-Uma empresa de e-commerce precisa personalizar a experiência de compra a partir do
-comportamento dos usuários. Este projeto implementa um recomendador que estima a
-preferência usuário–item e gera rankings personalizados, comparando um modelo neural
-(MLP) com baselines clássicos (Popularity e SVD).
+Este projeto implementa um sistema de recomendação usando o dataset MovieLens 100K.
+O pipeline cobre desde o processamento dos dados até o registro do modelo em produção,
+com rastreamento de experimentos, versionamento via DVC e containerização com Docker.
 
-O planejamento completo do produto (stakeholders, métricas de negócio, SLOs, dados,
-riscos e roadmap) está no **[ML Canvas](docs/ML_CANVAS.md)**.
+O sistema é composto por dois fluxos independentes:
 
-| Item | Detalhe |
-| --- | --- |
-| **Modelo central** | MLP com embeddings de usuário e item (PyTorch) |
-| **Baselines** | Popularity e SVD (Scikit-Learn) |
-| **Dataset** | MovieLens 100K (ratings explícitos 1–5) |
-| **Métrica técnica primária** | PR-AUC (Average Precision) |
-| **Métrica de negócio primária** | Taxa de conversão atribuída à recomendação |
+- **Pipeline offline** — processa dados, treina o modelo e o registra no MLflow
+- **API online** — serve recomendações em tempo real usando o modelo já treinado
 
 ---
 
-## Stack
+## Tech Stack
 
-| Camada | Ferramenta |
-| --- | --- |
-| Gerência de dependências | **uv** (`uv.lock` commitado) |
-| Modelo / ML | PyTorch, Scikit-Learn |
-| Tracking e Registry | MLflow |
-| Versionamento de dados / pipeline | DVC |
-| Configuração | Pydantic Settings (`.env`) |
-| Qualidade de código | Ruff + pre-commit |
-| Containerização | Docker (multi-stage) |
-
----
-
-## Estrutura do projeto
-
-```
-.
-├── src/ecommerce_recommender/   # Pacote principal
-│   ├── config.py                # Settings (Pydantic) carregado do .env
-│   ├── evaluation/              # Métricas de ranking e classificação
-│   ├── models/                  # EmbeddingMLP + baselines + Factory/Strategy
-│   ├── training/                # Loop de treino com early stopping
-│   ├── preprocessing/           # (planejado) estratégias de pré-processamento
-│   └── utils/
-├── tests/                       # Testes (unit / integration)
-├── notebooks/                   # EDA e experimentos (RetailRocket, MovieLens)
-├── scripts/validate_env.py      # Validação de ambiente
-├── configs/                     # Configurações de pipeline
-├── data/                        # raw / processed / features (versionados via DVC)
-├── models/                      # Artefatos de modelo (versionados via DVC)
-├── docs/ML_CANVAS.md            # Planejamento do produto de ML
-├── pyproject.toml               # Dependências (prod/dev) + ruff + pytest
-└── uv.lock                      # Lock file de reprodutibilidade
-```
+| Ferramenta | Uso |
+|---|---|
+| Python 3.11 | Linguagem principal |
+| PyTorch | Rede neural MLP com embeddings |
+| Scikit-Learn | Baselines e pré-processamento |
+| MLflow | Tracking de experimentos e Model Registry |
+| DVC | Versionamento de dados e pipeline reprodutível |
+| Docker | Containerização multi-stage |
+| FastAPI | API de recomendações |
+| uv | Gerenciamento de dependências |
 
 ---
 
-## Pré-requisitos
+## Estrutura do Projeto
 
-- **Python ≥ 3.11**
-- **[uv](https://docs.astral.sh/uv/)** — gerenciador de pacotes e projetos
+ecommerce-recommender/
+├── .env.example                     ← template de variáveis de ambiente
+├── .gitignore
+├── .pre-commit-config.yaml          ← hooks de lint automático
+├── docker-compose.yml               ← mlflow + trainer + api
+├── Dockerfile                       ← build multi-stage
+├── dvc.yaml                         ← pipeline com 6 stages
+├── params.yaml                      ← hiperparâmetros do pipeline
+├── pyproject.toml                   ← dependências prod/dev separadas
+├── uv.lock                          ← lock file (commitar no Git)
+├── data/
+│   ├── raw/ml-100k/                 ← dados brutos (baixar manualmente)
+│   ├── processed/                   ← gerado pelo pipeline
+│   └── features/                    ← gerado pelo pipeline
+├── models/                          ← artefatos gerados pelo treino
+├── notebooks/
+│   ├── 01_eda_retailrocket.ipynb    ← EDA RetailRocket (descartado)
+│   ├── 02_eda_movielens.ipynb       ← EDA MovieLens 100K
+│   ├── 03_model_experiments_retailrocket.ipynb
+│   └── 04_model_experiments_movielens.ipynb
+├── scripts/
+│   ├── build_movielens_interactions.py  ← stage 1 do pipeline
+│   ├── compare_models.py                ← compara MLP vs baselines
+│   ├── register_model.py                ← registra no MLflow Registry
+│   └── validate_env.py                  ← valida o ambiente pós-clone
+└── src/
+├── api/                         ← FastAPI (routers, services, schemas)
+├── evaluation/                  ← métricas e avaliador
+├── models/                      ← Factory + MLP + baselines
+├── preprocessing/               ← pipeline de features
+├── training/                    ← trainer + tracker MLflow
+└── utils/                       ← config (Pydantic Settings), logging, seed
+
+---
+
+## Primeiros Passos
+
+### Pré-requisitos
+
+- [uv](https://docs.astral.sh/uv/) instalado
+- [Docker](https://www.docker.com/) instalado
+- Git instalado
+
+Instale o uv:
 
 ```bash
-# Instalação do uv (macOS / Linux)
 curl -LsSf https://astral.sh/uv/install.sh | sh
+source ~/.zshrc
 ```
 
----
-
-## Instalação (do zero)
+### 1. Clonar o repositório
 
 ```bash
-# 1. Clonar o repositório
-git clone https://github.com/gui3561-ux/grupo-98-tech-challenger-fase2.git
-cd grupo-98-tech-challenger-fase2
+git clone https://github.com/seu-usuario/ecommerce-recommender.git
+cd ecommerce-recommender
+```
 
-# 2. Instalar dependências (cria o .venv e resolve via uv.lock)
+### 2. Instalar dependências
+
+```bash
 uv sync --dev
+```
 
-# 3. Configurar variáveis de ambiente
+### 3. Configurar variáveis de ambiente
+
+```bash
 cp .env.example .env
+```
 
-# 4. Validar o ambiente
+Edite o `.env` se necessário. Os valores padrão funcionam para desenvolvimento local.
+
+### 4. Validar o ambiente
+
+```bash
 uv run python scripts/validate_env.py
 ```
 
-A saída esperada termina com `✓ Ambiente válido. Pronto para rodar o pipeline.`
+Todos os itens devem aparecer com ✓.
 
+### 5. Baixar o dataset
 
-
-## SETUP
-
-
-### Client:
+```bash
+curl -L https://files.grouplens.org/datasets/movielens/ml-100k.zip \
+  -o /tmp/ml-100k.zip
+unzip /tmp/ml-100k.zip -d data/raw/
 ```
-$ npm run dev
-```
-
-### Api:
-
-```
-$ uv run uvicorn api.app:app --reload
-```
-
-
-### ML FLow:
-
-```
-$ uv run mlflow server --port 5000 --backend-store-uri sqlite:///mlflow/mlflow.db
-or
-$ mlflow server --host 127.0.0.1 --port 5000 --backend-store-uri sqlite:///mlflow/mlflow.db --default-artifact-root /mlflow/artifacts
-```
-If you decide use the secondd option don't forget to change the .env file (MLFLOW_TRACKING_URI)
 
 ---
 
-## Uso
+## Como Rodar
 
-### Configuração (`.env` + Pydantic Settings)
+### Opção A — Com Docker (recomendado)
 
-Todas as configurações são externalizadas em `.env` e tipadas em
-`ecommerce_recommender.config.Settings`:
+**Subir MLflow + API:**
 
-```python
-from ecommerce_recommender import get_settings
-
-settings = get_settings()
-print(settings.random_seed)          # 42
-print(settings.hidden_dims_list())   # [128, 64, 32]
+```bash
+docker compose up --build
 ```
 
-### Criando um recomendador (Factory + Strategy)
+**Opção A: Rodar o pipeline de treino via Docker:**
 
-```python
-from ecommerce_recommender import RecommenderFactory
-
-# Baseline de popularidade
-rec = RecommenderFactory.create("popularity", train_items=[1, 1, 2, 3])
-print(rec.recommend(user_id=0, top_k=2))   # [1, 2]
-
-# Demais estratégias: "mlp", "svd"
+```bash
+docker compose --profile training up trainer
 ```
 
-### Avaliação
+**Opção B: Rodar através do endpoint /api/pipeline/full**
+
+```curl
+--request POST \
+  --url http://localhost:8000/api/pipeline/full
+```
+
+**Verificar os serviços:**
+
+MLflow UI : http://localhost:5001
+API docs  : http://localhost:8000/docs
+
+
+---
+
+### Opção B — Localmente com uv
+
+**1. Subir o MLflow server** (em um terminal separado, deixar rodando):
+
+```bash
+export MLFLOW_TRACKING_URI=http://localhost:5001
+export MLFLOW_EXPERIMENT_NAME=ecommerce-recommender
+
+uv run mlflow server \
+  --host 0.0.0.0 \
+  --port 5001 \
+  --backend-store-uri sqlite:///mlflow.db \
+  --default-artifact-root ./mlruns
+```
+
+**2. Rodar o pipeline completo com DVC:**
+
+```bash
+dvc repro
+```
+
+Ou etapa por etapa:
+
+```bash
+uv run python scripts/build_movielens_interactions.py  # processa dados brutos
+uv run python -m preprocessing.feature_cli             # gera features
+uv run python -m training.cli                          # treina o MLP
+uv run python scripts/compare_models.py                # compara com baselines
+uv run python scripts/register_model.py                # registra no MLflow
+```
+
+**3. Subir a API:**
+
+```bash
+uv run uvicorn api.app:app --host 0.0.0.0 --port 8000 --reload
+```
+
+---
+
+## Pipeline DVC
+
+preprocess → feature_engineering → train → evaluate
+→ compare_models
+→ register
+
+Visualizar o DAG:
+
+```bash
+dvc dag
+```
+
+Reexecutar só um stage específico:
+
+```bash
+dvc repro train --force
+```
+
+---
+
+## Modelos Disponíveis
+
+| Modelo | Chave | Tipo | Descrição |
+|---|---|---|---|
+| MLP com Embeddings | `mlp` | Neural (PyTorch) | user_emb + item_emb → MLP → score |
+| Matrix Factorization | `svd` | Baseline (sklearn) | TruncatedSVD na matriz usuário-item |
+| Popularity | `popularity` | Baseline | Itens mais populares globalmente |
+
+Todos instanciados via Factory Pattern:
 
 ```python
-from ecommerce_recommender import pr_auc, ndcg_at_k
-
-pr_auc([0, 0, 1, 1], [0.1, 0.2, 0.8, 0.9])     # 1.0
-ndcg_at_k({1, 2}, [1, 5, 2], k=3)
+from models.factory import ModelFactory
+model = ModelFactory.create("mlp", num_users=943, num_items=1682)
 ```
+
+---
+
+## API
+
+### Endpoints principais
+
+| Método | Endpoint | Descrição |
+|---|---|---|
+| GET | `/recommendations/{user_id}` | Recomendações para um usuário |
+| GET | `/api/health` | Status da API |
+| POST | `/pipeline/train` | Dispara o pipeline de treino |
+
+### Testar a API
+
+```bash
+# Recomendações para o usuário 0
+curl http://localhost:8000/recommendations/0
+
+# Documentação interativa
+open http://localhost:8000/docs
+```
+
+---
+
+## Experimentos MLflow
+
+Acesse `http://localhost:5001` para visualizar:
+
+- Curvas de loss por época do treino
+- Comparação MLP vs SVD vs Popularity (4 métricas)
+- Modelo registrado no Model Registry com aliases `@staging` e `@production`
+
+Carregar o modelo em produção via MLflow:
+
+```python
+import mlflow.pytorch
+model = mlflow.pytorch.load_model("models:/ecommerce-mlp-recommender@production")
+```
+
+---
+
+## Métricas de Avaliação
+
+| Métrica | Tipo | Descrição |
+|---|---|---|
+| RMSE | Regressão | Erro quadrático médio nos ratings |
+| Precision@10 | Ranking | Fração dos top-10 que são relevantes |
+| Recall@10 | Ranking | Fração dos relevantes encontrados no top-10 |
+| nDCG@10 | Ranking | Ganho acumulado descontado — pondera posição |
+
+---
+
+## Dataset
+
+**MovieLens 100K** — GroupLens Research
+
+| Atributo | Valor |
+|---|---|
+| Usuários | 943 |
+| Itens (filmes) | 1.682 |
+| Interações | 100.000 ratings |
+| Escala | 1 a 5 estrelas |
+| Split | Temporal 80/10/10 |
+
+**Nota:** o RetailRocket Ecommerce Dataset foi avaliado primeiro e
+descartado. 96,7% dos eventos eram "views" com rating normalizado = 0,0,
+impossibilitando o aprendizado de preferências reais. Análise completa em
+`notebooks/01_eda_retailrocket.ipynb`.
 
 ---
 
 ## Desenvolvimento
 
+### Executar testes
+
 ```bash
-# Rodar os testes (com cobertura)
-uv run pytest -q
+uv run pytest
+```
 
-# Lint
-uv run ruff check .
+### Verificar linting
 
-# Formatação
-uv run ruff format .
+```bash
+uv run ruff check src/ scripts/
+```
 
-# Hooks de pre-commit (em todos os arquivos)
-uv run pre-commit run --all-files
+### Adicionar dependência de produção
+
+```bash
+uv add nome-do-pacote
+```
+
+### Adicionar dependência de desenvolvimento
+
+```bash
+uv add --dev nome-do-pacote
 ```
 
 ---
 
-## Design patterns
+## Variáveis de Ambiente
 
-| Pattern | Aplicação |
-| --- | --- |
-| **Strategy** | `Recommender` (ABC) define a interface; `MLPRecommender`, `PopularityRecommender` e `SVDRecommender` são estratégias intercambiáveis |
-| **Factory** | `RecommenderFactory.create(kind, ...)` centraliza a criação das estratégias |
+Copie `.env.example` para `.env` e ajuste os valores:
+
+| Variável | Padrão | Descrição |
+|---|---|---|
+| `APP_ENV` | `development` | Ambiente da aplicação |
+| `RANDOM_SEED` | `42` | Seed global para reprodutibilidade |
+| `MLFLOW_TRACKING_URI` | `http://localhost:5001` | URL do servidor MLflow |
+| `MLFLOW_EXPERIMENT_NAME` | `ecommerce-recommender` | Nome do experimento |
+| `BATCH_SIZE` | `256` | Amostras por mini-batch |
+| `LEARNING_RATE` | `0.001` | Taxa de aprendizado do Adam |
+| `NUM_EPOCHS` | `50` | Máximo de épocas de treino |
+| `EMBEDDING_DIM` | `64` | Dimensão dos vetores de embedding |
+| `HIDDEN_DIMS` | `128,64,32` | Camadas ocultas do MLP |
+| `EARLY_STOPPING_PATIENCE` | `5` | Épocas sem melhora antes de parar |
 
 ---
-
-## Status do projeto
-
-| Etapa | Foco | Status |
-| --- | --- | --- |
-| **Etapa 1** | Clean code, estrutura, design patterns, ruff, pre-commit | ✅ Concluída |
-| **Etapa 2** | Ambiente, dependências (uv), `.env` + Pydantic, validação | ✅ Concluída |
-| **Etapa 3** | Docker multi-stage + DVC pipeline + MLflow tracking | 🚧 Em andamento |
-| **Etapa 4** | MLP PyTorch + Model Registry + Model Card + vídeo STAR | 🚧 Planejada |
-
-> Nota sobre o gerenciador: o enunciado cita "pyproject.toml com **Poetry/uv**".
-> Optamos por **uv** (equivalente moderno, com lock file e instalação reprodutível),
-> escolha alinhada com a orientação dos professores.
 
 ## Model Card
 
@@ -223,9 +368,8 @@ uv run pre-commit run --all-files
 
 Este modelo prevê o quanto um usuário tende a avaliar bem um filme, e
 ranqueia o catálogo de acordo para gerar recomendações top-K. É indicado
-para **cenários de recomendação exploratórios e não críticos** (ex:
-widgets do tipo "você também pode gostar") — não para decisões com
-consequências de segurança, financeiras ou legais.
+para **cenários de recomendação exploratórios e não críticos** — não para
+decisões com consequências de segurança, financeiras ou legais.
 
 ### Dados de Treino
 
@@ -234,18 +378,9 @@ consequências de segurança, financeiras ou legais.
 | **Dataset** | MovieLens 100K (GroupLens Research) |
 | **Tamanho** | 100.000 ratings · 943 usuários · 1.682 filmes |
 | **Tipo de feedback** | Explícito (ratings de 1 a 5 estrelas) |
-| **Estratégia de split** | Temporal 80/10/10 (treino/validação/teste) — evita vazamento de dados futuros |
+| **Estratégia de split** | Temporal 80/10/10 — evita vazamento de dados futuros |
 | **Mínimo de interações por usuário** | 20 (garantido pelo próprio dataset) |
 | **Esparsidade** | ~93,7% |
-
-**Nota sobre a escolha do dataset:** o RetailRocket Ecommerce Dataset
-(2,7M eventos implícitos) foi avaliado primeiro e descartado. 96,7% dos
-seus eventos eram ações de "view", que mapeiam para um rating
-normalizado de 0.0 — deixando a maioria dos usuários com histórico de
-interação completamente zerado e sem sinal aproveitável para o modelo
-aprender preferências. A análise completa está documentada em
-`notebooks/01_eda_retailrocket.ipynb` e
-`notebooks/03_model_experiments_retailrocket.ipynb`.
 
 ### Performance
 
@@ -257,79 +392,68 @@ Avaliado no conjunto de teste temporal (10.000 ratings):
 | Baseline Popularity | 0,7050 | **0,2392** | **0,0449** | **0,2494** |
 | Baseline SVD | 0,6980 | 0,0669 | 0,0080 | 0,0575 |
 
-- O MLP alcança um **RMSE 2,6x menor** que ambos os baselines, indicando
-  predição de rating substancialmente mais precisa.
-- O baseline Popularity supera o MLP nas métricas de ranking
-  (Precision@10, Recall@10, nDCG@10). Ver *Limitações* abaixo para a
-  explicação técnica.
-- O SVD performa pior em todas as métricas, provavelmente devido ao
-  número limitado de usuários (943) em relação à quantidade de fatores
-  latentes escolhida (50).
+O MLP alcança um **RMSE 2,6x menor** que os baselines — predição de
+rating substancialmente mais precisa. O baseline Popularity supera o MLP
+nas métricas de ranking porque o MLP foi otimizado com MSELoss (predição
+de valor), não com uma loss de ranking como BPR.
 
 ### Limitações
 
-1. **Trade-off entre ranking e predição de rating.** O MLP é treinado
-   com `MSELoss`, que otimiza para valores de rating precisos, não para
-   a *ordenação* dos itens recomendados. Isso explica por que um
-   baseline de Popularity, muito mais simples, supera o MLP nas métricas
-   específicas de ranking. Uma loss orientada a ranking (ex: Bayesian
-   Personalised Ranking — BPR) provavelmente reduziria essa diferença;
-   isso está documentado como trabalho futuro.
-
-2. **Usuários e itens cold-start.** O modelo não consegue gerar
-   recomendações significativas para usuários ou itens ausentes do
-   conjunto de treino, já que os embeddings só existem para IDs vistos
-   durante o treino.
-
-3. **Atualidade do dataset.** O MovieLens 100K foi coletado entre
-   1997-1998. As preferências dos usuários e o catálogo de filmes não
-   refletem o comportamento de consumo atual.
-
-4. **Escala.** O modelo foi validado com 943 usuários e 1.682 itens.
-   O comportamento em escala de produção de e-commerce real (milhões de
-   usuários/itens) não foi testado e exigiria revalidação, principalmente
-   quanto ao consumo de memória das tabelas de embedding e à latência de
-   inferência.
+1. **Trade-off ranking vs. predição.** MSELoss otimiza valores de rating,
+   não ordenação. BPR loss provavelmente reduziria essa diferença.
+2. **Cold-start.** Sem recomendações para usuários/itens não vistos no treino.
+3. **Dataset de 1997-1998.** Não reflete comportamento de consumo atual.
+4. **Escala não testada.** Validado com 943 usuários — comportamento com
+   milhões de usuários é desconhecido.
 
 ### Vieses Conhecidos
 
-1. **Viés de popularidade.** Como a maioria dos modelos de filtragem
-   colaborativa treinados com sinais implícitos de ranking, o MLP tende
-   a favorecer itens com mais interações históricas, já que aparecem
-   com mais frequência nos batches de treino. Isso pode sub-expor itens
-   de nicho ou novos (efeito "rich get richer").
-
-2. **Viés demográfico nos dados de treino.** A base de usuários do
-   MovieLens 100K é aproximadamente 71% masculina, com idade média de
-   34 anos. As recomendações podem refletir preferências enviesadas
-   para essa demografia e não generalizar igualmente bem para grupos
-   sub-representados no dataset.
-
-3. **Viés de gênero (de filme).** Drama é o gênero dominante em número
-   de filmes no catálogo, o que pode enviesar as recomendações para
-   Drama mesmo para usuários que não expressaram essa preferência
-   explicitamente.
+1. **Viés de popularidade.** Itens frequentes no treino tendem a ser
+   mais recomendados (efeito "rich get richer").
+2. **Viés demográfico.** Base ~71% masculina, média 34 anos.
+3. **Viés de gênero.** Drama domina o catálogo, pode enviesar recomendações.
 
 ### Reprodutibilidade
 
 | | |
 |---|---|
-| **Seed aleatória** | 42 (fixada em NumPy, PyTorch e nos splits de dados) |
-| **Script de treino** | `uv run python -m training.cli` |
-| **Script de avaliação** | `uv run python scripts/compare_models.py` |
-| **Script de registro** | `uv run python scripts/register_model.py` |
-| **Rastreamento de experimentos** | MLflow (`mlflow_experiment_name=ecommerce-recommender`) |
+| **Seed** | 42 (NumPy, PyTorch e splits de dados) |
+| **Pipeline completo** | `dvc repro` |
+| **Docker** | `docker compose --profile training up trainer` |
+| **Experimentos** | `http://localhost:5001` |
 
+### Trabalhos Futuros
+
+- Substituir MSELoss por **BPR loss** para otimizar ranking diretamente
+- Avaliar no RetailRocket com loss de ranking (feedback implícito)
+- Adicionar features de categoria e dados demográficos como inputs extras
 
 ---
 
-## Referências
+## Contribuindo
 
-- [ML Canvas do projeto](docs/ML_CANVAS.md)
-- [MovieLens 100K — GroupLens](https://grouplens.org/datasets/movielens/100k/)
-- [Documentação do uv](https://docs.astral.sh/uv/)
-- [MLflow Model Registry](https://mlflow.org/docs/latest/model-registry.html)
-- [DVC — Pipelines, params & metrics](https://dvc.org/doc/start/data-pipelines/metrics-parameters-plots)
+1. Crie uma branch: `git checkout -b feat/nome-da-feature`
+2. Implemente seguindo os padrões do projeto (type hints, docstrings Google style, funções ≤ 20 linhas)
+3. Verifique o lint: `uv run ruff check src/`
+4. Commit semântico: `git commit -m "feat: descrição da mudança"`
+5. Abra uma Pull Request para `main`
+
+### Convenção de commits
+
+| Prefixo | Uso |
+|---|---|
+| `feat:` | Nova funcionalidade |
+| `fix:` | Correção de bug |
+| `docs:` | Documentação |
+| `refactor:` | Refatoração |
+| `test:` | Testes |
+| `chore:` | Configuração e dependências |
+
+---
+
+## Equipe
+
+Desenvolvido pelo Grupo 98 — Pós-Tech FIAP Machine Learning Engineering.
 
 ---
 
