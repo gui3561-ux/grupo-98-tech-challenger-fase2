@@ -13,7 +13,8 @@ build/
 
 # Dados e modelos (versionados pelo DVC, não pelo Git)
 data/raw/*
-
+!data/raw/*.dvc
+!data/raw/.gitignore
 data/features/*
 models/*
 !data/**/.gitkeep

@@ -1,9 +1,10 @@
 [core]
-    remote = local_storage
+    remote = azure-storage
+['remote "azure-storage"']
+    url = azure://dvc-storage
+    account_name = techchallengerdvc
 ['remote "google"']
     url = gdrive://1EwOpoSFQ7rYZs_VDNc2QJPLrY-RBTocK
     gdrive_client_id = 941645432308-f2qroe8audot2qk95c3f01ii1jq9i1cj.apps.googleusercontent.com
     gdrive_client_secret = 
     gdrive_acknowledge_abuse = true
-['remote "local_storage"']
-    url = /tmp/dvc-storage
