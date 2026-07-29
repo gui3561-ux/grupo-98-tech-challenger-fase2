@@ -17,6 +17,7 @@ O sistema é composto por dois fluxos independentes:
 - **Pipeline offline** — processa dados, treina o modelo e o registra no MLflow
 - **API online** — serve recomendações em tempo real usando o modelo já treinado
 
+**Video STAR** - https://drive.google.com/file/d/1XAAAsmVP84577DPJf6pwPrxJTnXwwS6g/view?usp=sharing
 ---
 
 ## Tech Stack
